@@ -1,7 +1,11 @@
 package com.odradeck.android.sunshine.app;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -12,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
 import java.io.BufferedReader;
@@ -22,6 +27,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,11 +62,12 @@ public class ForecastFragment extends Fragment {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        Log.v("ODRA", "FragmentFragment : onOptionsItemSelected");
         if (id == R.id.action_refresh) {
-            FetchWeatherTask weatherTask = new FetchWeatherTask();
-            weatherTask.execute("94043");
+            updateWeather();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -70,25 +77,52 @@ public class ForecastFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_forecast, container, false);
 
-        ArrayList<String> forecast_list = new ArrayList<String>();
-
-        forecast_list.add("Today - Sunny - 88/63");
-        forecast_list.add("Tomorrow - Foggy - 70/46");
-        forecast_list.add("Weds - Cloudy - 72/63");
-        forecast_list.add("Thurs - Rainy - 64/51");
-        forecast_list.add("Fri - Foggy - 70/46");
-        forecast_list.add("Sat - Sunny - 76 / 68");
+//        ArrayList<String> forecast_list = new ArrayList<String>();
+//
+//        forecast_list.add("Today - Sunny - 88/63");
+//        forecast_list.add("Tomorrow - Foggy - 70/46");
+//        forecast_list.add("Weds - Cloudy - 72/63");
+//        forecast_list.add("Thurs - Rainy - 64/51");
+//        forecast_list.add("Fri - Foggy - 70/46");
+//        forecast_list.add("Sat - Sunny - 76 / 68");
 
         mforecastAdapter = new ArrayAdapter<String>(getActivity(),
                 R.layout.list_item_forecast,
                 R.id.list_item_forecast_textview,
-                forecast_list);
+                new ArrayList<String>());
 
         ListView listview = (ListView) rootView.findViewById(R.id.listview_forecast);
         listview.setAdapter(mforecastAdapter);
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
+                String text = mforecastAdapter.getItem(position);
+                Context context = getActivity();
+                Intent intent = new Intent(getActivity(), DetailActivity.class).putExtra(Intent.EXTRA_TEXT, text);
+                startActivity(intent);
+//                int duration = Toast.LENGTH_SHORT;
+//
+//                Toast toast = Toast.makeText(context, text, duration);
+//                toast.show();
+            }
+        });
 
         return rootView;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
+    private void updateWeather() {
+        FetchWeatherTask weatherTask = new FetchWeatherTask();
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = pref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+        String unit = pref.getString(getString(R.string.pref_unit_key), getString(R.string.pref_unit_metric));
+        weatherTask.execute(location, unit);
     }
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
@@ -114,14 +148,14 @@ public class ForecastFragment extends Fragment {
                 final String UNITS_PARAM = "units";
                 final String DAYS_PARAM = "cnt";
                 String format = "json";
-                String units = "metric";
+                //String units = "metric";
                 int numDays = 7;
 
 
                 Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
                         .appendQueryParameter(QUERY_PARAM, params[0])
                         .appendQueryParameter(FORMAT_PARAM, format)
-                        .appendQueryParameter(UNITS_PARAM, units)
+                        .appendQueryParameter(UNITS_PARAM, params[1])
                         .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
                         .build();
                 //URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7");
@@ -220,7 +254,7 @@ public class ForecastFragment extends Fragment {
         long roundedHigh = Math.round(high);
         long roundedLow = Math.round(low);
 
-        String highLowStr = roundedHigh + "/" + roundedLow;
+        String highLowStr = roundedHigh + " / " + roundedLow;
         return highLowStr;
     }
 
