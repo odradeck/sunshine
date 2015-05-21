@@ -18,6 +18,7 @@
     <string name="setting_unit_title">Temparature Unit</string>
     <string name="pref_unit_key">unit</string>
     <string name="pref_unit_metric">metric</string>
+    <string name="pref_unit_imperial">imperial</string>
 
 
     <string-array name="pref_unit_values">
