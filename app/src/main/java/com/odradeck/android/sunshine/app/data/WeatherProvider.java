@@ -23,6 +23,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.util.Log;
 
 public class WeatherProvider extends ContentProvider {
 
@@ -145,12 +146,15 @@ public class WeatherProvider extends ContentProvider {
   public String getType(Uri uri) {
 
     // Use the Uri Matcher to determine what kind of URI this is.
+    Log.d("odradeck", "======= ");
     final int match = sUriMatcher.match(uri);
-
+    Log.d("odradeck", "======= " + match);
     switch (match) {
-      // Student: Uncomment and fill out these two cases
-//            case WEATHER_WITH_LOCATION_AND_DATE:
-//            case WEATHER_WITH_LOCATION:
+       //Student: Uncomment and fill out these two cases
+      case WEATHER_WITH_LOCATION_AND_DATE:
+        return WeatherContract.WeatherEntry.CONTENT_ITEM_TYPE;
+      case WEATHER_WITH_LOCATION:
+        return WeatherContract.WeatherEntry.CONTENT_TYPE;
       case WEATHER:
         return WeatherContract.WeatherEntry.CONTENT_TYPE;
       case LOCATION:
