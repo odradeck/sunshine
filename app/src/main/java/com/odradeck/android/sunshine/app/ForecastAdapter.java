@@ -88,7 +88,7 @@ public class ForecastAdapter extends CursorAdapter {
         // Choose the layout type
         int viewType = getItemViewType(cursor.getPosition());
         int layoutId = -1;
-        // TODO: Determine layoutId from viewType
+
 
         if (viewType == VIEW_TYPE_TODAY) {
             layoutId = R.layout.list_item_forecast_today;
@@ -119,8 +119,23 @@ public class ForecastAdapter extends CursorAdapter {
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
-        // Use placeholder image for now
-        viewHolder.iconView.setImageResource(R.mipmap.ic_launcher);
+        int weather_condition_id = cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
+
+        if (weather_condition_id == -1) {
+            viewHolder.iconView.setImageResource(R.mipmap.ic_launcher);
+        }else {
+
+            int viewType = getItemViewType(cursor.getPosition());
+            if (viewType == VIEW_TYPE_TODAY) {
+                viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weather_condition_id));
+
+            } else if (viewType == VIEW_TYPE_FUTURE_DAY) {
+                viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(weather_condition_id));
+
+            }
+        }
+
+
 
         // Read date from cursor
         long dateInMillis = cursor.getLong(ForecastFragment.COL_WEATHER_DATE);
